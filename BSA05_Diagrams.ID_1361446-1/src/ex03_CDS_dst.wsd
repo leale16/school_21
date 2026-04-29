@@ -1,0 +1,31 @@
+@startuml
+!theme plain
+title Диаграмма состояний - Жизненный цикл заказа (to be)
+
+state "Новый" as New
+state "Свободен" as Free
+state "Забронирован" as Booked
+state "Взят в работу" as InProgress
+state "Доставлен" as Delivered
+state "Отменён" as Cancelled
+
+[*] --> New : Оператор / Создаёт заказ
+
+New --> Free : Оператор / Публикует заказ
+
+Free --> Booked : Курьер / Выбирает и бронирует заказ
+
+Booked --> Free : Диспетчер / Отменяет бронирование
+Booked --> InProgress : Курьер / Отмечает получение заказа
+
+InProgress --> Delivered : Курьер / Отмечает доставку заказа
+
+Delivered --> [*] : Система / Завершение
+
+Free --> Cancelled : Диспетчер / Отменяет заказ
+Booked --> Cancelled : Диспетчер / Отменяет заказ
+InProgress --> Cancelled : Диспетчер / Отменяет заказ
+
+Cancelled --> [*]
+
+@enduml

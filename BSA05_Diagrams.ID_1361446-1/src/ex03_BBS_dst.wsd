@@ -1,0 +1,46 @@
+@startuml
+!theme plain
+title Диаграмма состояний - Жизненный цикл клиента (to be)
+
+state "Новый клиент" as New
+state "Зарегистрирован" as Registered
+state "Записан" as Booked
+state "Ожидает услугу" as Waiting
+state "Отменил запись" as Cancelled
+state "Получил напоминание" as Reminded
+state "Посетил барбершоп" as Visited
+state "Оплатил услугу" as Paid
+state "Не пришёл" as NoShow
+state "Получил услугу" as Served
+state "Оставил отзыв" as Reviewed
+state "Заблокирован" as Blocked
+
+[*] --> New : Клиент / Заходит на сайт
+
+New --> Registered : Клиент / Регистрируется на сайте
+New --> Booked : Клиент / Выбирает услугу, мастера и время
+
+Registered --> Booked : Клиент / Создаёт запись
+Registered --> Blocked : Менеджер / Блокирует аккаунт
+
+Booked --> Waiting : Система / Подтверждение записи
+Booked --> Cancelled : Клиент / Отменяет запись
+
+Waiting --> Reminded : Система / Отправляет напоминание
+Waiting --> Cancelled : Клиент / Отменяет запись
+
+Reminded --> Visited : Клиент / Приходит в назначенное время
+Reminded --> NoShow : Система / no-show (клиент не явился)
+
+Visited --> Served : Клиент / Мастер оказал клиенту услугу
+Served --> Paid : Клиент / Оплачивает услугу
+
+Paid --> Reviewed : Клиент / Оценивает услугу и пишет отзыв
+
+Reviewed --> [*]
+Cancelled --> [*]
+NoShow --> [*]
+
+Blocked --> [*]
+
+@enduml

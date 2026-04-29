@@ -1,0 +1,79 @@
+@startuml
+!theme plain
+title DFD уровня 0 — Система онлайн-записи барбершопа (to be)
+
+' ВНЕШНИЕ СУЩНОСТИ
+rectangle "Клиент" as Client
+rectangle "Менеджер" as Manager
+rectangle "Мастер" as Master
+rectangle "Бухгалтерия" as Accounting
+
+' ХРАНИЛИЩА ДАННЫХ
+storage "client" as D_client
+storage "service" as D_service
+storage "master" as D_master
+storage "schedule" as D_schedule
+storage "booking" as D_booking
+storage "review" as D_review
+storage "payment" as D_payment
+storage "notification" as D_notification
+storage "report" as D_report
+
+' ПРОЦЕССЫ
+usecase "1. Управлять\nзаписью" as P1
+usecase "2. Управлять\nрасписанием и услугами" as P2
+usecase "3. Управлять\nоплатой" as P3
+usecase "4. Управлять\nотзывами и отчетами" as P4
+usecase "5. Управлять\nуведомлениями" as P5
+
+' ===== ПОТОКИ ДАННЫХ =====
+
+' === Клиент ===
+Client --> P1 : Данные клиента
+P1 --> Client : Подтверждение записи
+P5 --> Client : Уведомление
+Client --> P4 : Оценка и предложения
+
+' === Менеджер ===
+Manager --> P2 : Управление расписанием и услугами
+Manager --> P3 : Отметка об оплате
+Manager --> P5 : Настройки уведомлений
+Manager <-- P4 : Отчет
+
+' === Мастер (теперь только через процессы) ===
+Master <-- P2 : Расписание и записи
+Master <-- P4 : Отзывы
+
+' === Бухгалтерия ===
+Accounting <-- P3 : Данные об оплате
+
+' === Процесс 1 ===
+P1 --> D_booking : Создание записи
+P1 <-- D_schedule : Свободные слоты
+P1 <-- D_client : Проверка/создание клиента
+
+' === Процесс 2 ===
+P2 --> D_schedule : Обновление расписания
+P2 --> D_master : Обновление данных мастера
+P2 --> D_service : Обновление каталога услуг
+P2 <-- D_schedule : Чтение расписания
+P2 <-- D_booking : Чтение записей
+P2 --> Master : Расписание и записи (через поток)
+
+' === Процесс 3 ===
+P3 --> D_payment : Запись об оплате
+P3 <-- D_booking : Данные записи для оплаты
+
+' === Процесс 4 ===
+P4 --> D_review : Сохранение отзыва
+P4 --> D_report : Формирование отчета
+P4 <-- D_booking : Данные о выполненных услугах
+P4 <-- D_review : Чтение отзывов
+P4 --> Master : Отзывы для просмотра
+
+' === Процесс 5 ===
+P5 --> D_notification : Лог уведомления
+P5 <-- D_booking : Записи для напоминания
+P5 <-- D_client : Клиент для уведомления
+
+@enduml
