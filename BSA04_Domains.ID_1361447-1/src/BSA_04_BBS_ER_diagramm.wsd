@@ -1,0 +1,152 @@
+@startuml
+!define table class
+
+' =============================================
+' Сущности
+' =============================================
+
+table "Клиент" as client {
+    * ID клиента : INTEGER <<PK>>
+    --
+    ФИО : STRING
+    телефон : VARCHAR
+    email : STRING
+    канал связи : ENUM
+    messenger_id : STRING
+    дата регистрации : DATETIME
+    статус : ENUM
+}
+
+table "Услуга" as service {
+    * ID услуги : INTEGER <<PK>>
+    --
+    наименование : STRING
+    тип : ENUM
+    длительность : INTEGER
+    стоимость : DECIMAL
+    описание : STRING
+}
+
+table "Мастер" as master {
+    * ID мастера : INTEGER <<PK>>
+    --
+    ФИО : STRING
+    специализация : STRING
+    телефон : VARCHAR
+    email : STRING
+    статус : ENUM
+}
+
+' Развязочная таблица M:N
+table "Мастер_Услуга" as master_service {
+    * ID мастера : INTEGER <<FK>>
+    * ID услуги : INTEGER <<FK>>
+}
+
+table "Расписание" as schedule {
+    * ID расписания : INTEGER <<PK>>
+    --
+    ID мастера : INTEGER <<FK>>
+    дата : DATE
+    время начала : TIME
+    время окончания : TIME
+    статус : ENUM
+    ID услуги : INTEGER <<FK>>
+}
+
+table "Запись" as booking {
+    * ID записи : INTEGER <<PK>>
+    --
+    ID клиента : INTEGER <<FK>>
+    ID мастера : INTEGER <<FK>>
+    ID услуги : INTEGER <<FK>>
+    ID расписания : INTEGER <<FK>>
+    дата и время : DATETIME
+    статус : ENUM
+    дата создания : DATETIME
+    способ записи : ENUM
+}
+
+table "Отзыв" as review {
+    * ID отзыва : INTEGER <<PK>>
+    --
+    ID записи : INTEGER <<FK>>
+    ID клиента : INTEGER <<FK>>
+    ID мастера : INTEGER <<FK>>
+    оценка : INTEGER
+    комментарий : STRING
+    дата создания : DATETIME
+    статус : ENUM
+}
+
+table "Оплата" as payment {
+    * ID оплаты : INTEGER <<PK>>
+    --
+    ID записи : INTEGER <<FK>>
+    сумма : DECIMAL
+    способ оплаты : ENUM
+    статус оплаты : ENUM
+    дата оплаты : DATETIME
+    ID менеджера : INTEGER
+    передано в бухгалтерию : BOOLEAN
+}
+
+table "Уведомление" as notification {
+    * ID уведомления : INTEGER <<PK>>
+    --
+    ID клиента : INTEGER <<FK>>
+    ID записи : INTEGER <<FK>>
+    тип : ENUM
+    канал : ENUM
+    текст : STRING
+    дата отправки : DATETIME
+    статус : ENUM
+}
+
+table "Отчет" as report {
+    * ID отчета : INTEGER <<PK>>
+    --
+    тип : ENUM
+    дата начала : DATE
+    дата окончания : DATE
+    данные : STRING
+    дата формирования : DATETIME
+    ID менеджера : INTEGER
+}
+
+' =============================================
+' Связи (глаголы + кратность)
+' =============================================
+
+' Клиент
+client ||--o{ booking : "создает запись"
+client ||--o{ review : "оставляет"
+client ||--o{ notification : "получает"
+
+' Услуга
+service ||--o{ booking : "выбирается в"
+service ||--o{ schedule : "планируется в"
+
+' Мастер
+master ||--o{ booking : "выполняет"
+master ||--o{ schedule : "работает по"
+master ||--o{ payment : "получает"
+master ||--|| review : "получает"
+
+' M:N мастер-услуга
+master ||--o{ master_service : "выполняет"
+service ||--o{ master_service : "предоставляется"
+
+' Расписание
+schedule ||--|| booking : "используется для"
+
+' Запись
+booking ||--|| payment : "оплачивается"
+booking ||--o{ notification : "инициирует"
+booking ||--|| review : "имеет"
+
+' Отчет (логическая связь)
+report ||--o{ booking : "формируется по"
+report ||--o{ payment : "учитывает"
+
+@enduml
